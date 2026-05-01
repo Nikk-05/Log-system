@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Log Query UI</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 20px;
+      background: #f4f4f4;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+    }
+    .log {
+      background: white;
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 5px solid #007bff;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔍 Log Search</h2>
+
+  <input id="level" placeholder="level (error/info)" />
+  <input id="message" placeholder="message" />
+  <input id="resourceId" placeholder="resourceId" />
+  <input id="startTime" placeholder="startTime (ISO)" />
+  <input id="endTime" placeholder="endTime (ISO)" />
+
+  <br/>
+
+  <button onclick="searchLogs()">Search</button>
+
+  <div id="results"></div>
+
+  <script>
+    async function searchLogs() {
+      const level = document.getElementById('level').value;
+      const message = document.getElementById('message').value;
+      const resourceId = document.getElementById('resourceId').value;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+
+      let query = [];
+
+      if (level) query.push(`level=${level}`);
+      if (message) query.push(`message=${message}`);
+      if (resourceId) query.push(`resourceId=${resourceId}`);
+      if (startTime) query.push(`startTime=${startTime}`);
+      if (endTime) query.push(`endTime=${endTime}`);
+
+      const url = `http://localhost:3000/search?${query.join("&")}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = "";
+
+      data.forEach(log => {
+        const div = document.createElement('div');
+        div.className = 'log';
+        div.innerHTML = `
+          <b>${log.level}</b> - ${log.message} <br/>
+          Resource: ${log.resourceId} <br/>
+          Time: ${log.timestamp}
+        `;
+        resultsDiv.appendChild(div);
+      });
+    }
+  </script>
+
+</body>
+</html>
